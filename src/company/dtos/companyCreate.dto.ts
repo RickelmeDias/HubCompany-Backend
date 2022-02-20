@@ -16,11 +16,4 @@ export class CompanyCreateDTO {
   @IsString()
   @ApiProperty()
   description: string;
-
-  @IsNotEmpty()
-  @ApiProperty()
-  main_responsible?: number;
-
-  responsibles?: Array<number>;
-  createdAt: Date;
 }

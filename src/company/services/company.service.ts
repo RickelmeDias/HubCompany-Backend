@@ -1,8 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { CompanyCreateDTO } from '../dtos/companyCreate.dto';
 import { CompanyEntity } from '../entitites/company.entity';
+import { ICompanyCreate } from '../interfaces/companyCreate.interface';
+import { ICompanyRead } from '../interfaces/companyRead.interface';
 
 @Injectable()
 export class CompanyService {
@@ -11,7 +12,7 @@ export class CompanyService {
     private companyRepository: Repository<CompanyEntity>,
   ) {}
 
-  async create(company: CompanyCreateDTO): Promise<object> {
+  async create(company: ICompanyCreate): Promise<object> {
     const cnpjExists = await this.companyRepository.findOne({
       cnpj: company.cnpj,
     });
@@ -25,5 +26,19 @@ export class CompanyService {
 
     await this.companyRepository.save(company);
     return { message: 'Account ' + company.name + ' has been created!' };
+  }
+
+  async read(RequesterInfos: ICompanyRead): Promise<CompanyEntity> {
+    const companyCNPJ = RequesterInfos.cnpj;
+
+    const Company = await this.companyRepository.findOne({
+      cnpj: companyCNPJ,
+    });
+
+    if (!Company) {
+      throw new HttpException('This cnpj not exists.', HttpStatus.BAD_REQUEST);
+    }
+
+    return Company;
   }
 }
