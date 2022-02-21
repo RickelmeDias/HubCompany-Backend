@@ -3,29 +3,29 @@ import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 @Entity()
 export class CompanyEntity {
   @PrimaryGeneratedColumn()
-  id: number;
+  id?: number;
 
   @Column()
-  name: string;
+  name?: string;
 
   @Column({ unique: true })
-  cnpj: string;
+  cnpj?: string;
 
   @Column()
-  description: string;
+  description?: string;
 
   @Column()
-  main_responsible: number;
+  main_responsible?: number;
 
   @Column('int', { array: true, nullable: true })
-  responsibles: Array<number>;
+  responsibles?: Array<number>;
 
   @Column('int', { array: true, nullable: true })
-  places: Array<number>;
+  places?: Array<number>;
 
   @Column()
-  createdAt: Date;
+  createdAt?: Date;
 
   @Column({ default: true })
-  isActive: boolean;
+  isActive?: boolean;
 }

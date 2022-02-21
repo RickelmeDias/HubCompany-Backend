@@ -1,21 +1,27 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty } from 'class-validator';
 
 export class CompanyUpdateDTO {
   @ApiProperty()
-  name: string;
+  name?: string;
 
+  @IsNotEmpty()
   @ApiProperty()
   cnpj: string;
 
+  @IsNotEmpty()
   @ApiProperty()
-  description: string;
+  new_cnpj?: string;
 
   @ApiProperty()
-  main_responsible: number;
+  description?: string;
 
   @ApiProperty()
-  responsibles: Array<number>;
+  main_responsible?: number;
 
   @ApiProperty()
-  places: Array<number>;
+  responsibles?: Array<number>;
+
+  @ApiProperty()
+  places?: Array<number>;
 }
