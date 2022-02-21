@@ -21,7 +21,4 @@ export class CompanyUpdateDTO {
 
   @ApiProperty()
   responsibles?: Array<number>;
-
-  @ApiProperty()
-  places?: Array<number>;
 }

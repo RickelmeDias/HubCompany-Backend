@@ -20,9 +20,6 @@ export class CompanyEntity {
   @Column('int', { array: true, nullable: true })
   responsibles?: Array<number>;
 
-  @Column('int', { array: true, nullable: true })
-  places?: Array<number>;
-
   @Column()
   createdAt?: Date;
 

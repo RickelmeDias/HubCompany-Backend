@@ -6,5 +6,4 @@ export interface ICompanyUpdate {
   description?: string;
   main_responsible?: number;
   responsibles?: Array<number>;
-  places?: Array<number>;
 }
