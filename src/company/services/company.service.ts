@@ -58,7 +58,7 @@ export class CompanyService {
     const isResponsible = await this.isResponsible(
       Request.requestId,
       Company.main_responsible,
-      Company.responsibles,
+      null,
     );
 
     // Checking if have something to update
@@ -91,7 +91,7 @@ export class CompanyService {
       }
     } else {
       throw new HttpException(
-        'You arent responsible for this company.',
+        'You are not main responsible to update a company.',
         HttpStatus.UNAUTHORIZED,
       );
     }
@@ -125,14 +125,16 @@ export class CompanyService {
     main_responsible: number,
     responsibles?: Array<number>,
   ): Promise<boolean> {
+    if (main_responsible == requesterId) {
+      return true;
+    }
+
     if (responsibles != null && responsibles.length > 0) {
       for (const resposible of responsibles) {
-        if (resposible === requesterId) {
+        if (resposible == requesterId) {
           return true;
         }
       }
-    } else if (main_responsible === requesterId) {
-      return true;
     } else {
       return false;
     }

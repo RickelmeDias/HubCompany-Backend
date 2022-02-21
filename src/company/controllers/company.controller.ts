@@ -70,7 +70,9 @@ export class CompanyController {
   @ApiBody({ type: CompanyGetPlacesDTO })
   async allPlaces(@Request() req: any): Promise<PlaceEntity[]> {
     const { companyId } = req.body;
-    return await this.placeService.getAllPlaces(companyId);
+    const { id: requestId } = req.user;
+
+    return await this.placeService.getAllPlaces(requestId, companyId);
   }
 
   // Update company.

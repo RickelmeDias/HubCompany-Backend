@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PlaceEntity } from '../entitites/place.entity';
 import { IPlaceCreate } from '../interfaces/placeCreate.interface';
 import { IPlaceDelete } from '../interfaces/placeDelete.interface';
@@ -46,6 +46,16 @@ export class PlaceService {
   // Update
   async update(Request: IPlaceUpdate): Promise<PlaceEntity> {
     const Place: PlaceEntity = await this.getPlaceIfExists(Request.placeId);
+
+    if (
+      Request.hasOwnProperty('main_responsible') ||
+      Request.hasOwnProperty('responsibles')
+    ) {
+      throw new HttpException(
+        'You are not the main responsible, so you cannot to update the responsible based fields.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
 
     const isResponsible = await this.isResponsible(
       Request.requestId,
@@ -99,6 +109,46 @@ export class PlaceService {
     }
   }
 
+  async getAllPlaces(
+    requestId: number,
+    companyId: number,
+  ): Promise<PlaceEntity[]> {
+    const Places: PlaceEntity[] = await this.placeRepository.find({
+      select: [
+        'id',
+        'name',
+        'cep',
+        'number',
+        'company_id',
+        'main_responsible',
+        'responsibles',
+      ],
+      where: {
+        company_id: companyId,
+      },
+    });
+
+    const filterPlace = [];
+    for (const place of Places) {
+      const beReturned = await this.isResponsible(
+        requestId,
+        place.main_responsible,
+        place.responsibles,
+      );
+
+      if (beReturned == true) {
+        filterPlace.push(place);
+      }
+    }
+    if (!filterPlace || !Places || filterPlace.length <= 0) {
+      throw new HttpException(
+        'You have not responsible for this company places.',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
+    return filterPlace;
+  }
+
   // Checking if the request is responsible for Place
   async isResponsible(
     requesterId: number,
@@ -133,12 +183,5 @@ export class PlaceService {
       return Place;
     }
   }
-
-  async getAllPlaces(companyId: number): Promise<PlaceEntity[]> {
-    const Places: PlaceEntity[] = await this.placeRepository.find({
-      company_id: companyId,
-    });
-
-    return Places;
-  }
+  // main_responsible
 }

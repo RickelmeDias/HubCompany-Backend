@@ -35,17 +35,35 @@ export class UserService {
   }
 
   async findByEmail(userEmail: string): Promise<UserEntity> {
-    const emailExists = await this.userRepository.findOne({
+    const email = await this.userRepository.findOne({
       email: userEmail,
     });
 
-    if (!emailExists) {
+    if (!email) {
       throw new HttpException(
         'This e-mail dont exists',
         HttpStatus.BAD_REQUEST,
       );
     }
 
-    return emailExists;
+    return email;
+  }
+
+  async findById(requestId: number): Promise<UserEntity> {
+    const user = await this.userRepository.findOne({
+      id: requestId,
+    });
+    delete user.password;
+    delete user.createdAt;
+    delete user.isActive;
+
+    if (!user) {
+      throw new HttpException(
+        'Error to get user informations',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return user;
   }
 }
