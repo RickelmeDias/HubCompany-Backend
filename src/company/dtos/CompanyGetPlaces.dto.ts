@@ -5,5 +5,5 @@ export class CompanyGetPlacesDTO {
   @IsNotEmpty()
   @IsNumber()
   @ApiProperty()
-  placeId: number;
+  companyId: number;
 }
