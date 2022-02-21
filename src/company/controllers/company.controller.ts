@@ -9,7 +9,11 @@ import {
 } from '@nestjs/common';
 import { ApiBody } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/authorization/services/jwt.auth.guard';
+import { PlaceEntity } from 'src/places/entitites/place.entity';
+import { PlaceService } from 'src/places/services/place.service';
 import { CompanyCreateDTO } from '../dtos/companyCreate.dto';
+import { CompanyDeleteDTO } from '../dtos/companyDelete.dto';
+import { CompanyGetPlacesDTO } from '../dtos/CompanyGetPlaces.dto';
 import { CompanyReadDTO } from '../dtos/companyRead.dto';
 import { CompanyUpdateDTO } from '../dtos/companyUpdate.dto';
 import { CompanyEntity } from '../entitites/company.entity';
@@ -19,7 +23,10 @@ import { CompanyService } from '../services/company.service';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
+  constructor(
+    private readonly companyService: CompanyService,
+    private readonly placeService: PlaceService,
+  ) {}
 
   // Create new company:
   @UseGuards(JwtAuthGuard)
@@ -57,6 +64,15 @@ export class CompanyController {
     return await this.companyService.read(ReaderInformation);
   }
 
+  // Read all places company.
+  @UseGuards(JwtAuthGuard)
+  @Get('places')
+  @ApiBody({ type: CompanyGetPlacesDTO })
+  async allPlaces(@Request() req: any): Promise<PlaceEntity[]> {
+    const { placeId } = req.body;
+    return await this.placeService.getAllPlaces(placeId);
+  }
+
   // Update company.
   @UseGuards(JwtAuthGuard)
   @Put()
@@ -79,7 +95,7 @@ export class CompanyController {
   // Delete company.
   @UseGuards(JwtAuthGuard)
   @Delete()
-  @ApiBody({ type: CompanyUpdateDTO })
+  @ApiBody({ type: CompanyDeleteDTO })
   async delete(@Request() req: any): Promise<CompanyEntity> {
     const body = req.body;
     const { id: requestId } = req.user;

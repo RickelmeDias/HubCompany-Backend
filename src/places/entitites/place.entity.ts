@@ -1,18 +1,21 @@
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class CompanyEntity {
+export class PlaceEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   name: string;
 
-  @Column({ unique: true })
-  cnpj: string;
+  @Column()
+  cep: string;
 
   @Column()
-  description: string;
+  number: string;
+
+  @Column()
+  company_id: number;
 
   @Column()
   main_responsible: number;
