@@ -31,7 +31,9 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Cors
-  app.enableCors();
+  app.enableCors({
+    origin: 'https://hubcompany.rickelmedias.dev/',
+  });
 
   const port = parseInt(process.env.PORT) || 3000;
   await app.listen(port, () => {
