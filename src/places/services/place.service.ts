@@ -1,22 +1,34 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CompanyService } from 'src/company/services/company.service';
+import { UserService } from 'src/user/services/user.service';
 import { In, Repository } from 'typeorm';
 import { PlaceEntity } from '../entitites/place.entity';
 import { IPlaceCreate } from '../interfaces/placeCreate.interface';
 import { IPlaceDelete } from '../interfaces/placeDelete.interface';
 import { IPlaceRead } from '../interfaces/placeRead.interface';
 import { IPlaceUpdate } from '../interfaces/placeUpdate.interface';
+import { IEditResponsible } from '../interfaces/ṕlaceIEditResponsible';
 
 @Injectable()
 export class PlaceService {
   constructor(
     @InjectRepository(PlaceEntity)
-    private placeRepository: Repository<PlaceEntity>,
+    private readonly placeRepository: Repository<PlaceEntity>,
+    private readonly companyService: CompanyService,
+    private readonly userService: UserService,
   ) {}
 
   // Create
   async create(Request: IPlaceCreate): Promise<object> {
+    const requestId = Request.requestId;
+    const companyId = Request.company_id;
+    await this.companyService.readById({
+      requestId: requestId,
+      company_id: companyId,
+    });
+
     const NewPlace = Request;
 
     await this.placeRepository.save(NewPlace);
@@ -87,6 +99,61 @@ export class PlaceService {
     }
   }
 
+  // Update Responsibles
+  async updateResponsibles(Request: IEditResponsible): Promise<PlaceEntity> {
+    const Place: PlaceEntity = await this.getPlaceIfExists(Request.placeId);
+
+    const userId = await this.userService.findByEmail(Request.email);
+
+    const isResponsible = await this.isResponsible(
+      Request.requestId,
+      Place.main_responsible,
+      Place.responsibles,
+    );
+
+    let responsibles = Place.responsibles;
+
+    if (responsibles === null) {
+      responsibles = [];
+    }
+
+    if (!responsibles.some((responsible) => responsible === userId.id)) {
+      responsibles.push(userId.id);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: [
+            {
+              message: 'User has been a responsible.',
+            },
+          ],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (isResponsible) {
+      const companyUpdated = {
+        ...Place,
+        responsibles: responsibles,
+      };
+      return await this.placeRepository.save(companyUpdated);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              message: 'To add more responsibles you need to be the Owner.',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
   // Delete
   async delete(Request: IPlaceDelete): Promise<PlaceEntity> {
     const PlaceToRemove = await this.placeRepository.findOne({
@@ -125,6 +192,7 @@ export class PlaceService {
       ],
       where: {
         company_id: companyId,
+        isActive: true,
       },
     });
 
@@ -155,14 +223,16 @@ export class PlaceService {
     main_responsible: number,
     responsibles?: Array<number>,
   ): Promise<boolean> {
+    if (main_responsible === requesterId) {
+      return true;
+    }
+
     if (responsibles != null && responsibles.length > 0) {
       for (const resposible of responsibles) {
         if (resposible === requesterId) {
           return true;
         }
       }
-    } else if (main_responsible === requesterId) {
-      return true;
     } else {
       return false;
     }
@@ -172,6 +242,7 @@ export class PlaceService {
   async getPlaceIfExists(placeId: number): Promise<PlaceEntity> {
     const Place: PlaceEntity = await this.placeRepository.findOne({
       id: placeId,
+      isActive: true,
     });
 
     if (Place == undefined) {

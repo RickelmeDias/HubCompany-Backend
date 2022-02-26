@@ -4,6 +4,4 @@ export interface IPlaceUpdate {
   name?: string;
   cep?: string;
   number?: string;
-  main_responsible?: number;
-  responsibles?: Array<number>;
 }

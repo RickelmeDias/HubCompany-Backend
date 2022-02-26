@@ -4,6 +4,4 @@ export interface ICompanyUpdate {
   name?: string;
   new_cnpj?: string;
   description?: string;
-  main_responsible?: number;
-  responsibles?: Array<number>;
 }

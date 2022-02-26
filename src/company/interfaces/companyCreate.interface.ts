@@ -3,6 +3,5 @@ export interface ICompanyCreate {
   cnpj: string;
   description: string;
   main_responsible: number;
-  responsibles?: Array<number>;
   createdAt: Date;
 }

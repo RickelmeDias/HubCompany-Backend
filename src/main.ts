@@ -15,16 +15,23 @@ async function bootstrap() {
 
   // Swagger
   const configSwagger = new DocumentBuilder()
-    .setTitle('API HubLocal')
+    .setTitle('API Hub Companies')
     .setDescription('The back-end API documentation')
-    .setVersion('1.0')
-    .addTag('app')
+    .setVersion('1.0.0')
+    .addTag('API Hub Companies Documentation')
+    .addBearerAuth(
+      { type: 'http', scheme: 'bearer', bearerFormat: 'Token' },
+      'acess-token',
+    )
     .build();
   const document = SwaggerModule.createDocument(app, configSwagger);
   SwaggerModule.setup('api', app, document);
 
   // Validator
   app.useGlobalPipes(new ValidationPipe());
+
+  // Cors
+  app.enableCors();
 
   const port = parseInt(process.env.PORT) || 3000;
   await app.listen(port, () => {

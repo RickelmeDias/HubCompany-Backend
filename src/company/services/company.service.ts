@@ -1,10 +1,13 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { UserEntity } from 'src/user/entities/user.entity';
+import { UserService } from 'src/user/services/user.service';
 import { Repository } from 'typeorm';
 import { CompanyEntity } from '../entitites/company.entity';
 import { ICompanyCreate } from '../interfaces/companyCreate.interface';
 import { ICompanyDelete } from '../interfaces/companyDelete.interface';
+import { IEditResponsible } from '../interfaces/companyIEditResponsible';
 import { ICompanyRead } from '../interfaces/companyRead.interface';
 import { ICompanyUpdate } from '../interfaces/companyUpdate.interface';
 
@@ -12,7 +15,8 @@ import { ICompanyUpdate } from '../interfaces/companyUpdate.interface';
 export class CompanyService {
   constructor(
     @InjectRepository(CompanyEntity)
-    private companyRepository: Repository<CompanyEntity>,
+    private readonly companyRepository: Repository<CompanyEntity>,
+    private readonly userService: UserService,
   ) {}
 
   // Create
@@ -26,11 +30,24 @@ export class CompanyService {
   }
 
   // Read
-  async read(Request: ICompanyRead): Promise<CompanyEntity> {
-    const Company: CompanyEntity = await this.validateCNPJ(
-      Request.cnpj,
-      'GET_COMPANY_IF_EXISTS',
-    );
+  async readById(Request): Promise<CompanyEntity> {
+    const Company: CompanyEntity = await this.companyRepository.findOne({
+      id: Request.company_id,
+    });
+
+    if (!Company) {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              message: 'Company not exists',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
 
     const isResponsible = await this.isResponsible(
       Request.requestId,
@@ -42,8 +59,15 @@ export class CompanyService {
       return Company;
     } else {
       throw new HttpException(
-        'You arent responsible for this company.',
-        HttpStatus.UNAUTHORIZED,
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              message: 'You are not resposible.',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
       );
     }
   }
@@ -97,6 +121,66 @@ export class CompanyService {
     }
   }
 
+  // Update Responsibles
+  async updateResponsibles(Request: IEditResponsible): Promise<CompanyEntity> {
+    const Company: CompanyEntity = await this.readById({
+      company_id: Request.companyId,
+      requestId: Request.requestId,
+    });
+
+    console.log(Request.requestId, Company.main_responsible);
+
+    const userId = await this.userService.findByEmail(Request.email);
+
+    const isResponsible = await this.isResponsible(
+      Request.requestId,
+      Company.main_responsible,
+      null,
+    );
+
+    let responsibles = Company.responsibles;
+
+    if (responsibles === null) {
+      responsibles = [];
+    }
+
+    if (!responsibles.some((responsible) => responsible === userId.id)) {
+      responsibles.push(userId.id);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.BAD_REQUEST,
+          error: [
+            {
+              message: 'User has been a responsible.',
+            },
+          ],
+        },
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    if (isResponsible) {
+      const companyUpdated = {
+        ...Company,
+        responsibles: responsibles,
+      };
+      return await this.companyRepository.save(companyUpdated);
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              message: 'To add more responsibles you need to be the Owner.',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
+      );
+    }
+  }
+
   // Delete
   async delete(Request: ICompanyDelete): Promise<CompanyEntity> {
     const companyToRemove = await this.companyRepository.findOne({
@@ -117,6 +201,33 @@ export class CompanyService {
         HttpStatus.UNAUTHORIZED,
       );
     }
+  }
+
+  // Get
+  async getUserCompanies(requesterId: number): Promise<CompanyEntity[]> {
+    const Companies: CompanyEntity[] = await this.companyRepository.find({
+      isActive: true,
+    });
+
+    const UserCompanies: CompanyEntity[] = [];
+
+    // Filter Users
+    for (const Company of Companies) {
+      if (Company.main_responsible == requesterId) {
+        UserCompanies.push(Company);
+        continue;
+      }
+      if (Company.responsibles !== null) {
+        for (const UserId of Company.responsibles) {
+          if (UserId === requesterId) {
+            UserCompanies.push(Company);
+            continue;
+          }
+        }
+      }
+    }
+
+    return UserCompanies;
   }
 
   // Checking if the request is responsible for company

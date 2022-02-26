@@ -1,0 +1,5 @@
+System: PostgreSQL
+Server: db
+Username: postgres
+Passowrd: .env.process.DB_PASS
+Database: postgres

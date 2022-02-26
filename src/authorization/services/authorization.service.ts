@@ -15,8 +15,20 @@ export class AuthorizationService {
 
   async validateUser(userEmail: string, userPassword: string): Promise<User> {
     const user: UserEntity = await this.userService.findByEmail(userEmail);
+
     if (!user) {
-      throw new HttpException('Authorization error.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              field: 'password',
+              message: 'Auth error.',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
+      );
     }
 
     const { id, email, name } = user;
@@ -27,7 +39,18 @@ export class AuthorizationService {
     );
 
     if (!validation) {
-      throw new HttpException('Authorization error.', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        {
+          status: HttpStatus.FORBIDDEN,
+          error: [
+            {
+              field: 'password',
+              message: 'Auth error.',
+            },
+          ],
+        },
+        HttpStatus.FORBIDDEN,
+      );
     } else {
       return { id: id, name: name, email: email };
     }
@@ -40,6 +63,7 @@ export class AuthorizationService {
       id: id,
       email: email,
     };
+
     return {
       acess_token: this.jwtService.sign(payload),
     };
