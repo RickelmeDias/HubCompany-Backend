@@ -31,8 +31,20 @@ async function bootstrap() {
   app.useGlobalPipes(new ValidationPipe());
 
   // Cors
+  const whitelist = [
+    'hubcompany.rickelmedias.dev',
+    'rickelmedias.dev',
+    'http://hubcompany.rickelmedias.dev',
+    'https://hubcompany.rickelmedias.dev',
+  ];
   app.enableCors({
-    origin: 'https://hubcompany.rickelmedias.dev/',
+    origin: function (origin, callback) {
+      if (!origin || whitelist.indexOf(origin) !== -1) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
   });
 
   const port = parseInt(process.env.PORT) || 3000;
