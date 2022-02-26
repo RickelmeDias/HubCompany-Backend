@@ -4,6 +4,13 @@
 
 <div align="center"><img src="./docs/assets/HubCompany-Backend.png" /></div>
 
+<div align="center">
+</br>
+<img src="https://img.shields.io/badge/SERVER%20STATUS-UP-green" />
+</div>
+
+> This project is running Fullstack (Backend and Frontend) in https://hubcompany.rickelmedias.dev/
+
 <h3 align="center"> ENGLISH </h3>
 
 > This API was created by me (Rickelme), for a challenge , the API have a CRUD for User, Companies, Places (Company branches). You also can give permissions (responsabilites) for other users watch your Company and create their places or see your places.
