@@ -86,15 +86,19 @@ Esse projeto me mostrou a importância de entender como funcionar tanto com Back
 ## Configurações iniciais para rodar o serviço
 Esse projeto de API é um projeto node, então fica bem fácil rodar utilizando os scripts.
 
-***Banco de dados**
+Para iniciar vamos baixar os pacotes:
 
-É importante que antes de rodar o projeto você tenha um banco de dados PostgreSQL rodando em sua máquina (pode ser docker também, deixei o arquivo docker-compse que utilizei na pasta `/docs` do projeto).
+```sh
+npm install
+```
 
-***.env.development**
+### Inicie o Banco de Dados (PostgreSQL)
 
-Também iremos precisar configurar o arquivo `.env.development` e `.env.production` antes de subir a aplicação.
+É importante que antes de rodar o projeto você tenha um banco de dados PostgreSQL rodando em sua máquina (pode ser docker também, deixei o arquivo docker-compse que utilizei na pasta `/docs` do projeto) o nome do arquivo é `example-docker-compose.yml`.
 
 ### Configurando .ENV.DEVELOPMENT && .ENV.PRODUCTION
+
+Também iremos precisar configurar o arquivo `.env.development` e `.env.production` antes de subir a aplicação.
 
 ```dotenv
 PORT= "3333"
@@ -108,20 +112,20 @@ DB_PORT="DATABASE_PORT"
 ```
 
 ### Comandos para rodar a aplicação
+
 Os principais comandos para rodar a aplicação são dois:
 
 ```sh
-start:dev
+npm run start:dev
 ```
 
 Se quiser rodar em produção:
 
 ```sh
-start:prod
+npm run start:prod
 ```
 Diferente do projeto [Why We Help Your Position](https://github.com/RickelmeDias/WhyWeHelpYourPosition) por questão de tempo em realação a demanda ainda não foi feito os tests, mas devo fazer com andar dos deploys.
 
-Onde obter as credenciais? Clique na seta abaixo:
 
 </br><hr/></br>
 
