@@ -15,6 +15,9 @@ import { UserEntity } from 'src/user/entities/user.entity';
       database: process.env.DB_NAME,
       entities: [UserEntity, CompanyEntity, PlaceEntity],
       synchronize: true,
+      ssl: {
+        ca: process.env.SSL_CERT,
+      },
     }),
   ],
 })
